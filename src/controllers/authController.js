@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
+const { sanitizeEmail, sanitizeString } = require('../utils/sanitize');
 
 class AuthController {
   // Register new user
@@ -7,18 +8,23 @@ class AuthController {
     try {
       const { email, password, firstName, lastName, phone } = req.body;
 
+      // Sanitize inputs
+      const sanitizedEmail = sanitizeEmail(email);
+      const sanitizedFirstName = sanitizeString(firstName);
+      const sanitizedLastName = sanitizeString(lastName);
+
       // Check if user exists
-      const existingUser = await User.findOne({ email });
+      const existingUser = await User.findOne({ email: sanitizedEmail });
       if (existingUser) {
         return res.status(400).json({ error: 'Email already registered' });
       }
 
       // Create user
       const user = new User({
-        email,
+        email: sanitizedEmail,
         password,
-        firstName,
-        lastName,
+        firstName: sanitizedFirstName,
+        lastName: sanitizedLastName,
         phone
       });
 
@@ -54,8 +60,11 @@ class AuthController {
     try {
       const { email, password } = req.body;
 
+      // Sanitize email input
+      const sanitizedEmail = sanitizeEmail(email);
+
       // Find user
-      const user = await User.findOne({ email });
+      const user = await User.findOne({ email: sanitizedEmail });
       if (!user) {
         return res.status(401).json({ error: 'Invalid credentials' });
       }

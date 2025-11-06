@@ -1,6 +1,7 @@
 const User = require('../models/User');
 const Transaction = require('../models/Transaction');
 const Sweepstakes = require('../models/Sweepstakes');
+const { isValidObjectId, sanitizeString } = require('../utils/sanitize');
 
 class AdminController {
   // Get dashboard statistics
@@ -119,12 +120,13 @@ class AdminController {
       const { page = 1, limit = 20, tier, search } = req.query;
       
       const query = {};
-      if (tier) query.tier = tier;
+      if (tier) query.tier = sanitizeString(tier);
       if (search) {
+        const sanitizedSearch = sanitizeString(search);
         query.$or = [
-          { email: { $regex: search, $options: 'i' } },
-          { firstName: { $regex: search, $options: 'i' } },
-          { lastName: { $regex: search, $options: 'i' } }
+          { email: { $regex: sanitizedSearch, $options: 'i' } },
+          { firstName: { $regex: sanitizedSearch, $options: 'i' } },
+          { lastName: { $regex: sanitizedSearch, $options: 'i' } }
         ];
       }
 
@@ -152,6 +154,12 @@ class AdminController {
   async updateUser(req, res) {
     try {
       const { id } = req.params;
+      
+      // Validate ObjectId
+      if (!isValidObjectId(id)) {
+        return res.status(400).json({ error: 'Invalid user ID' });
+      }
+
       const updates = req.body;
 
       // Don't allow password updates through this endpoint
@@ -177,6 +185,11 @@ class AdminController {
   async adjustPoints(req, res) {
     try {
       const { userId, points, reason } = req.body;
+
+      // Validate ObjectId
+      if (!isValidObjectId(userId)) {
+        return res.status(400).json({ error: 'Invalid user ID' });
+      }
 
       const user = await User.findById(userId);
       if (!user) {
