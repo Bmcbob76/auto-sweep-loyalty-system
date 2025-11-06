@@ -14,10 +14,10 @@ class LoyaltyService {
       // Calculate points (1 point per dollar, with tier bonuses)
       let pointsMultiplier = 1;
       switch (user.tier) {
-        case 'silver': pointsMultiplier = 1.1; break;
-        case 'gold': pointsMultiplier = 1.25; break;
-        case 'platinum': pointsMultiplier = 1.5; break;
-        case 'diamond': pointsMultiplier = 2; break;
+      case 'silver': pointsMultiplier = 1.1; break;
+      case 'gold': pointsMultiplier = 1.25; break;
+      case 'platinum': pointsMultiplier = 1.5; break;
+      case 'diamond': pointsMultiplier = 2; break;
       }
 
       const pointsEarned = Math.floor(amount * pointsMultiplier);

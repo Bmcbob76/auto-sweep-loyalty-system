@@ -11,26 +11,26 @@ class PaymentController {
       let result;
 
       switch (paymentMethod) {
-        case 'stripe':
-          result = await paymentService.processStripePayment(userId, amount, description);
-          break;
-        case 'paypal':
-          result = await paymentService.processPayPalPayment(userId, amount, description);
-          break;
-        case 'square':
-          result = await paymentService.processSquarePayment(userId, amount, paymentData.sourceId, description);
-          break;
-        case 'chime':
-        case 'cashapp':
-        case 'venmo':
-        case 'zelle':
-          result = await paymentService.processAlternativePayment(userId, amount, paymentMethod, paymentData, description);
-          break;
-        case 'crypto':
-          result = await paymentService.processCryptoPayment(userId, amount, paymentData.currency, description);
-          break;
-        default:
-          return res.status(400).json({ error: 'Invalid payment method' });
+      case 'stripe':
+        result = await paymentService.processStripePayment(userId, amount, description);
+        break;
+      case 'paypal':
+        result = await paymentService.processPayPalPayment(userId, amount, description);
+        break;
+      case 'square':
+        result = await paymentService.processSquarePayment(userId, amount, paymentData.sourceId, description);
+        break;
+      case 'chime':
+      case 'cashapp':
+      case 'venmo':
+      case 'zelle':
+        result = await paymentService.processAlternativePayment(userId, amount, paymentMethod, paymentData, description);
+        break;
+      case 'crypto':
+        result = await paymentService.processCryptoPayment(userId, amount, paymentData.currency, description);
+        break;
+      default:
+        return res.status(400).json({ error: 'Invalid payment method' });
       }
 
       res.json({

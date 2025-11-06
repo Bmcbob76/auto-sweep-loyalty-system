@@ -1,7 +1,6 @@
 const User = require('../models/User');
 const Transaction = require('../models/Transaction');
 const Sweepstakes = require('../models/Sweepstakes');
-const Reward = require('../models/Reward');
 
 class AdminController {
   // Get dashboard statistics
@@ -62,49 +61,49 @@ class AdminController {
       let result;
 
       switch (metric) {
-        case 'revenue':
-          result = await Transaction.aggregate([
-            { $match: { createdAt: dateFilter, status: 'completed', type: 'purchase' } },
-            {
-              $group: {
-                _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
-                total: { $sum: '$amount' },
-                count: { $sum: 1 }
-              }
-            },
-            { $sort: { _id: 1 } }
-          ]);
-          break;
+      case 'revenue':
+        result = await Transaction.aggregate([
+          { $match: { createdAt: dateFilter, status: 'completed', type: 'purchase' } },
+          {
+            $group: {
+              _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+              total: { $sum: '$amount' },
+              count: { $sum: 1 }
+            }
+          },
+          { $sort: { _id: 1 } }
+        ]);
+        break;
 
-        case 'signups':
-          result = await User.aggregate([
-            { $match: { createdAt: dateFilter } },
-            {
-              $group: {
-                _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
-                count: { $sum: 1 }
-              }
-            },
-            { $sort: { _id: 1 } }
-          ]);
-          break;
+      case 'signups':
+        result = await User.aggregate([
+          { $match: { createdAt: dateFilter } },
+          {
+            $group: {
+              _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+              count: { $sum: 1 }
+            }
+          },
+          { $sort: { _id: 1 } }
+        ]);
+        break;
 
-        case 'points':
-          result = await Transaction.aggregate([
-            { $match: { createdAt: dateFilter, pointsEarned: { $gt: 0 } } },
-            {
-              $group: {
-                _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
-                totalPoints: { $sum: '$pointsEarned' },
-                count: { $sum: 1 }
-              }
-            },
-            { $sort: { _id: 1 } }
-          ]);
-          break;
+      case 'points':
+        result = await Transaction.aggregate([
+          { $match: { createdAt: dateFilter, pointsEarned: { $gt: 0 } } },
+          {
+            $group: {
+              _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+              totalPoints: { $sum: '$pointsEarned' },
+              count: { $sum: 1 }
+            }
+          },
+          { $sort: { _id: 1 } }
+        ]);
+        break;
 
-        default:
-          return res.status(400).json({ error: 'Invalid metric' });
+      default:
+        return res.status(400).json({ error: 'Invalid metric' });
       }
 
       res.json({ data: result });

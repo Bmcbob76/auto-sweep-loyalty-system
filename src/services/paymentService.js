@@ -163,21 +163,23 @@ class PaymentService {
   async handleStripeWebhook(event) {
     try {
       switch (event.type) {
-        case 'payment_intent.succeeded':
-          const paymentIntent = event.data.object;
-          const transaction = await Transaction.findOne({ paymentId: paymentIntent.id });
-          if (transaction) {
-            await this.completeTransaction(transaction._id);
-          }
-          break;
+      case 'payment_intent.succeeded': {
+        const paymentIntent = event.data.object;
+        const transaction = await Transaction.findOne({ paymentId: paymentIntent.id });
+        if (transaction) {
+          await this.completeTransaction(transaction._id);
+        }
+        break;
+      }
         
-        case 'payment_intent.payment_failed':
-          const failedIntent = event.data.object;
-          await Transaction.findOneAndUpdate(
-            { paymentId: failedIntent.id },
-            { status: 'failed' }
-          );
-          break;
+      case 'payment_intent.payment_failed': {
+        const failedIntent = event.data.object;
+        await Transaction.findOneAndUpdate(
+          { paymentId: failedIntent.id },
+          { status: 'failed' }
+        );
+        break;
+      }
       }
     } catch (error) {
       console.error('Stripe webhook error:', error);
