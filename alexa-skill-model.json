@@ -1,0 +1,54 @@
+{
+  "interactionModel": {
+    "languageModel": {
+      "invocationName": "loyalty system",
+      "intents": [
+        {
+          "name": "GetPointsIntent",
+          "slots": [],
+          "samples": [
+            "how many points do I have",
+            "what's my points balance",
+            "check my points",
+            "what's my loyalty balance",
+            "how many loyalty points do I have"
+          ]
+        },
+        {
+          "name": "GetRewardsIntent",
+          "slots": [],
+          "samples": [
+            "what rewards are available",
+            "show me rewards",
+            "what can I redeem",
+            "tell me about rewards",
+            "what rewards can I get"
+          ]
+        },
+        {
+          "name": "GetSweepstakesIntent",
+          "slots": [],
+          "samples": [
+            "what sweepstakes are active",
+            "tell me about sweepstakes",
+            "what contests are running",
+            "show me sweepstakes",
+            "what can I enter"
+          ]
+        },
+        {
+          "name": "AMAZON.HelpIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.CancelIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.StopIntent",
+          "samples": []
+        }
+      ]
+    }
+  }
+}
