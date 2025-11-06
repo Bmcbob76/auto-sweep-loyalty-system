@@ -1,0 +1,127 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: loyalty_postgres
+    environment:
+      POSTGRES_DB: ${DB_NAME:-loyalty_db}
+      POSTGRES_USER: ${DB_USER:-user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/db/seed_data.sql:/docker-entrypoint-initdb.d/seed_data.sql
+    networks:
+      - loyalty_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-user}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: loyalty_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - loyalty_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend API (FastAPI)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: ../infrastructure/docker/backend.Dockerfile
+    container_name: loyalty_backend
+    env_file:
+      - .env
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    volumes:
+      - ./backend:/app
+      - /app/__pycache__
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - loyalty_network
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Admin Dashboard Frontend
+  dashboard:
+    build:
+      context: ./frontend/dashboard
+      dockerfile: ../../infrastructure/docker/frontend.Dockerfile
+    container_name: loyalty_dashboard
+    ports:
+      - "${FRONTEND_DASHBOARD_PORT:-3000}:3000"
+    volumes:
+      - ./frontend/dashboard:/app
+      - /app/node_modules
+    environment:
+      - VITE_API_URL=http://localhost:8000
+    networks:
+      - loyalty_network
+    command: npm run dev -- --host 0.0.0.0
+
+  # Customer Portal Frontend
+  customer_portal:
+    build:
+      context: ./frontend/customer_portal
+      dockerfile: ../../infrastructure/docker/frontend.Dockerfile
+    container_name: loyalty_customer_portal
+    ports:
+      - "${FRONTEND_CUSTOMER_PORT:-3001}:3001"
+    volumes:
+      - ./frontend/customer_portal:/app
+      - /app/node_modules
+    environment:
+      - VITE_API_URL=http://localhost:8000
+      - VITE_PORT=3001
+    networks:
+      - loyalty_network
+    command: npm run dev -- --host 0.0.0.0 --port 3001
+
+  # AI Engine (Optional)
+  ai_engine:
+    build:
+      context: ./ai_engine
+      dockerfile: ../infrastructure/docker/ai_engine.Dockerfile
+    container_name: loyalty_ai_engine
+    env_file:
+      - .env
+    volumes:
+      - ./ai_engine:/app
+    depends_on:
+      - backend
+      - redis
+    networks:
+      - loyalty_network
+    profiles:
+      - ai
+
+networks:
+  loyalty_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
