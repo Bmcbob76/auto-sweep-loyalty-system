@@ -48,6 +48,11 @@ const userSchema = new mongoose.Schema({
     unique: true,
     sparse: true
   },
+  alexaUserId: {
+    type: String,
+    unique: true,
+    sparse: true
+  },
   totalSpent: {
     type: Number,
     default: 0

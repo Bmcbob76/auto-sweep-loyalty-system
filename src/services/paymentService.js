@@ -180,6 +180,10 @@ class PaymentService {
         );
         break;
       }
+        
+      default:
+        console.log('Unhandled webhook event type:', event.type);
+        break;
       }
     } catch (error) {
       console.error('Stripe webhook error:', error);
